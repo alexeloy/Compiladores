@@ -5,7 +5,7 @@ Compilado no Delphi Berlim 10.1
 
 ![Tutorial](https://github.com/alexeloy/Compiladores/blob/master/tutorial.jpg)
 
-#Instruções
+# Instruções
   1. Insira os símbolos Não Terminais (O primeiro será considerado o Símbolo inicial);
   2. Insira os símbolos Terminais (caso queira excluir algum já inserido, clique sobre ele e aprte no botão de excluir será exibido);
   3. Selecione um Símbolo não Terminal para inserir as produções dele;
