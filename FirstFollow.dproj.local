@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2017/12/20 09:42:18.000.166,=C:\Users\Alex Eloy\Documents\Embarcadero\Studio\Projects\Unit25.pas</Transaction>
+    <Transaction>2017/12/20 09:42:47.000.515,C:\Users\Alex Eloy\Documents\Embarcadero\Studio\Projects\Project25.dproj=C:\Users\Alex Eloy\Documents\Embarcadero\Studio\Projects\Project25.dproj</Transaction>
+    <Transaction>2017/12/20 10:21:30.000.490,C:\Users\Alex Eloy\Documents\Embarcadero\Studio\Projects\Project25.dproj=E:\Estudos\UEPB\2017.1\Compiladores\FirstFollow\FirstFollow.dproj</Transaction>
+    <Transaction>2017/12/20 10:21:51.000.161,C:\Users\Alex Eloy\Documents\Embarcadero\Studio\Projects\Unit25.pas=E:\Estudos\UEPB\2017.1\Compiladores\FirstFollow\principal.pas</Transaction>
+    <Transaction>2017/12/20 10:21:51.000.161,C:\Users\Alex Eloy\Documents\Embarcadero\Studio\Projects\Unit25.fmx=E:\Estudos\UEPB\2017.1\Compiladores\FirstFollow\principal.fmx</Transaction>
+  </Transactions>
+	<ActiveMobileDevice>
+		<PMACVIRTUAL iOSSimulator="iPhone5"/>
+	</ActiveMobileDevice>
+</BorlandProject>
