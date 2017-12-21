@@ -1,4 +1,4 @@
-unit principal;
+ï»¿unit principal;
 
 interface
 
@@ -108,6 +108,9 @@ type
     FillRGBEffect10: TFillRGBEffect;
     Rectangle29: TRectangle;
     FillRGBEffect11: TFillRGBEffect;
+    Layout13: TLayout;
+    Rectangle30: TRectangle;
+    lbl_epsilon: TText;
 
 
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -133,12 +136,14 @@ type
     procedure btn_gerarClick(Sender: TObject);
     procedure timer_statusTimer(Sender: TObject);
     procedure Rectangle29Click(Sender: TObject);
+    procedure Rectangle30Click(Sender: TObject);
   private
-    function retorna_first(Nao_Terminal: String): String;
+    function retorna_first(Nao_Terminal: String;var eof:boolean): String;
     function Verifica_Existencia(Lista:TStrings; No: string): Boolean;
     function Elimina_Duplicidade_De_Nos(Lista: String): String;
     procedure Exibe_Mensagem(msg: String);
     procedure Inserir_Producao(Nao_Terminal, Producao: String);
+    function retorna_Follow(Terminal: String; eof: boolean=false): String;
     { Private declarations }
   public
     { Public declarations }
@@ -185,9 +190,9 @@ end;
 
 {*******************************************************************************
 Procedimento : Inserir_Produca
-Parâmetros : Nao_Terminal,Producao : String;
+ParÃ¢metros : Nao_Terminal,Producao : String;
 
-Recebe um Nó não terminal e atribui à ele uma nova produção
+Recebe um NÃ³ nÃ£o terminal e atribui Ã  ele uma nova produÃ§Ã£o
 *******************************************************************************}
 
 procedure Tform_principal.Inserir_Producao(Nao_Terminal:String;Producao:String);
@@ -249,7 +254,7 @@ begin
   if pos('>',cp_producoes.Text) > 0 then
   begin
 
-    Exibe_Mensagem('Utilize o seguinte padrão: Ex: Ba|a|d');
+    Exibe_Mensagem('Utilize o seguinte padrÃ£o: Ex: Ba|a|d');
 
     exit;
   end;
@@ -269,7 +274,7 @@ begin
     on Exception do
     begin
       anim_brilho_nao_terminal.Start;
-      Exibe_Mensagem('Selecione um nó Não Terminal!');
+      Exibe_Mensagem('Selecione um nÃ³ NÃ£o Terminal!');
     end;
    end;
   end else
@@ -308,11 +313,22 @@ function Tform_principal.Elimina_Duplicidade_De_Nos(Lista:String):String;
 var
   stl : TStringList;
   I,J: Integer;
+  temp:string;
 begin
   stl := TStringList.Create;
   try
     stl.Delimiter := ',';
     stl.DelimitedText := Lista;
+    stl.Sort;
+
+    if stl.Count > 0 then
+    if stl.Strings[0] = '*' then
+    begin
+      stl.Delete(0);
+      stl.Add('*');
+    end;
+
+
     for I := stl.Count - 1 downto 0 do
     begin
       for J := 0 to stl.Count - 1 do
@@ -330,20 +346,21 @@ begin
 
 end;
 
-function Tform_principal.retorna_first(Nao_Terminal:String):String;
+function Tform_principal.retorna_first(Nao_Terminal:String;var eof:boolean):String;
 var
-  I,J,K,l : integer;
+  I,J,K,l,M : integer;
   firsts : string;
   no_nao_terminal : String;
   no_terminal : String;
   producao : TStringList;
   aux : string;
   yy  : boolean;
+  possui_eof : Boolean;
 begin
   producao := TStringList.Create;
   try
     producao.Delimiter := '>';
-
+    eof := False;
     for J := 0 to lista_producoes.Count - 1 do
     begin
       producao.DelimitedText := lista_producoes.Items.Strings[J];
@@ -355,42 +372,161 @@ begin
         aux := '';
         for k := 0 to producao.Count - 1 do
         begin
-          //procura por nós terminais
+          //procura por nÃ³s terminais
           yy := false;
           for l := 0 to lista_terminal.Items.Count - 1 do
           begin
-            if copy(producao.Strings[k],1,1) = lista_terminal.Items.Strings[l] then
+            if (copy(producao.Strings[k],1,1) = lista_terminal.Items.Strings[l]) or (copy(producao.Strings[k],1,1) = '*') then
             begin
               yy := True;
               if aux = EmptyStr then
-                aux := lista_terminal.Items.Strings[l]
+                aux := producao.Strings[k]
               else
-                aux := aux + ',' + lista_terminal.Items.Strings[l];
+                aux := aux + ',' + producao.Strings[k];
               break;
             end;
           end;
+          //if producao.strings[k] = '*' then
+
 
           if not yy then
           begin
-            for l := 0 to lista_nao_terminal.Items.Count - 1 do
+
+            for m := 1 to Length(producao.Strings[k]) do
             begin
-              if copy(producao.Strings[k],1,1) = lista_nao_terminal.Items.Strings[l] then
+
+              for l := 0 to lista_nao_terminal.Items.Count - 1 do
               begin
-                if aux = EmptyStr then
-                  aux := retorna_first(lista_nao_terminal.Items.Strings[l])
-                else
-                  aux := aux + ',' + retorna_first(lista_nao_terminal.Items.Strings[l]);
-                break;
+                if copy(producao.Strings[k],m,1) = lista_nao_terminal.Items.Strings[l] then
+                begin
+                  if aux = EmptyStr then
+                    aux := retorna_first(lista_nao_terminal.Items.Strings[l],possui_eof)
+                  else
+                    aux := aux + ',' + retorna_first(lista_nao_terminal.Items.Strings[l],possui_eof);
+                end;
+
+
               end;
+              if not possui_eof then
+                    break;
             end;
           end;
 
+          if producao.strings[k] = '*' then
+            eof := True;
 
 
         end;
 
 
 
+      end;
+      if aux <> EmptyStr then
+        break;
+    end;
+    finally
+      producao.Free;
+    end;
+  Result := Elimina_Duplicidade_De_Nos(aux);
+end;
+
+function Tform_principal.retorna_Follow(Terminal:String;eof : boolean = false):String;
+var
+  I,J,K,l,M,n,p : integer;
+  firsts : string;
+  no_nao_terminal : String;
+  no_terminal : String;
+  producao : TStringList;
+  aux : string;
+  yy  : boolean;
+  possui_eof : Boolean;
+begin
+  producao := TStringList.Create;
+  try
+    producao.Delimiter := '>';
+    eof := False;
+    for J := 0 to lista_producoes.Count - 1 do
+    begin
+      producao.DelimitedText := lista_producoes.Items.Strings[J];
+
+      if J = lista_producoes.Count - 1 then
+          begin
+            aux := retorna_Follow(copy(lista_producoes.Items.Strings[J],1,1));
+
+            continue;
+          end;
+
+      for n := 0 to producao.Count - 1 do
+      begin
+
+        for p := 1 to Length(producao.Strings[n])-1 do
+
+        if (copy(producao.Strings[n],p,1) = Terminal)  and (copy(lista_producoes.Items.Strings[J],1,1) <> Terminal ) then
+        begin
+        {
+        if lista_producoes.Items.Strings[J].ind then
+        begin
+          aux := '$';
+          break;
+        end;
+        }
+
+
+          firsts := producao.Strings[1];
+          producao.Delimiter := '|';
+          producao.DelimitedText := firsts;
+          aux := '';
+          for k := 0 to producao.Count - 1 do
+          begin
+            //procura por nÃ³s terminais
+            yy := false;
+            for l := 0 to lista_terminal.Items.Count - 1 do
+            begin
+              if (copy(producao.Strings[k],1,1) = lista_terminal.Items.Strings[l]) or (copy(producao.Strings[k],1,1) = '*') then
+              begin
+                yy := True;
+                if aux = EmptyStr then
+                  aux := producao.Strings[k]
+                else
+                  aux := aux + ',' + producao.Strings[k];
+                break;
+              end;
+            end;
+            //if producao.strings[k] = '*' then
+
+
+            if not yy then
+            begin
+
+              for m := 1 to Length(producao.Strings[k]) do
+              begin
+
+                for l := 0 to lista_nao_terminal.Items.Count - 1 do
+                begin
+                  if copy(producao.Strings[k],m,1) = lista_nao_terminal.Items.Strings[l] then
+                  begin
+                    if aux = EmptyStr then
+                      aux := retorna_first(lista_nao_terminal.Items.Strings[l],possui_eof)
+                    else
+                      aux := aux + ',' + retorna_first(lista_nao_terminal.Items.Strings[l],possui_eof);
+                  end;
+
+
+                end;
+                if not possui_eof then
+                      break;
+              end;
+            end;
+
+            if producao.strings[k] = '*' then
+              eof := True;
+
+
+          end;
+
+
+
+        end;
       end;
       if aux <> EmptyStr then
         break;
@@ -425,17 +561,18 @@ var
   no_terminal : String;
   producao : TStringList;
   aux : string;
+  b : Boolean;
 begin
   try
     for I := 0 to lista_nao_terminal.Count - 1 do
     begin
-      aux := retorna_first(lista_nao_terminal.Items.Strings[I]);
-      memo_first.Items.Add('First('+lista_nao_terminal.Items[I]+')={'+aux+'}');
+      aux := retorna_first(lista_nao_terminal.Items.Strings[I],b);
+      memo_first.Items.Add('First('+lista_nao_terminal.Items[I]+')={'+'$'+'}');
     end;
 
     for I := 0 to lista_nao_terminal.Count - 1 do
     begin
-      memo_follow.Items.Add('Follow('+lista_nao_terminal.Items[I]+')={à implementar}');
+      memo_follow.Items.Add('Follow('+lista_nao_terminal.Items[I]+')={Ã  implementar}');
     end;
   except
     on E:Exception do
@@ -544,6 +681,15 @@ begin
   close;
 end;
 
+procedure Tform_principal.Rectangle30Click(Sender: TObject);
+begin
+  if cp_producoes.Text = EmptyStr then
+    cp_producoes.Text := cp_producoes.Text + '*'
+  else
+    cp_producoes.Text := cp_producoes.Text + '|*'
+
+end;
+
 procedure Tform_principal.btn_gerarClick(Sender: TObject);
 var
   I,J,K,l : integer;
@@ -553,13 +699,14 @@ var
   no_terminal : String;
   producao : TStringList;
   aux : string;
+  b : Boolean;
 begin
   try
 
     memo_first.Items.Clear;
     for I := 0 to lista_nao_terminal.Count - 1 do
     begin
-      aux := retorna_first(lista_nao_terminal.Items.Strings[I]);
+      aux := retorna_first(lista_nao_terminal.Items.Strings[I],b);
 
       memo_first.Items.Add('First('+lista_nao_terminal.Items[I]+')={'+aux+'}');
     end;
@@ -567,11 +714,17 @@ begin
     memo_follow.Items.Clear;
     for I := 0 to lista_nao_terminal.Count - 1 do
     begin
-      memo_follow.Items.Add('Follow('+lista_nao_terminal.Items[I]+')={à implementar}');
+
+      aux := retorna_follow(lista_nao_terminal.Items.Strings[I],b);
+
+      if I = 0 then
+        memo_follow.Items.Add('Follow('+lista_nao_terminal.Items[I]+')={'+'$'+'}')
+      else
+        memo_follow.Items.Add('Follow('+lista_nao_terminal.Items[I]+')={'+aux+'}');
     end;
   except
     on E:Exception do
-      Exibe_Mensagem('Existe algum erro nas suas produções!');
+      Exibe_Mensagem('Existe algum erro nas suas produÃ§Ãµes!'+#13 + e.Message);
 
   end;
 
